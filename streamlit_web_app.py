@@ -8,6 +8,10 @@ This is a temporary script file.
 import os
 import pickle
 import streamlit as st
+import pytesseract
+from PIL import Image
+import cv2
+import numpy as np
 
 # Set page configuration
 st.set_page_config(page_title="Diabetes Prediction Assistant",
@@ -24,7 +28,80 @@ working_dir = os.path.dirname(os.path.abspath(__file__))
 # Load the saved diabetes model
 diabetes_model = pickle.load(open(r'C:/Users/suman/OneDrive/Desktop/Assignments/My Resume/Final_Project/ProjectFiles/SavedModels/diabetes_model.sav', 'rb'))
 
+# Function to process image and extract text
+def process_image(image):
+    """Process the image to extract text using pytesseract."""
+    # Convert the image to grayscale (for better OCR results)
+    gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
+    
+    # Apply OCR to extract text from the image
+    extracted_text = pytesseract.image_to_string(gray_image)
+    
+    return extracted_text
 
+# Function to parse extracted text and extract values
+def parse_text(text):
+    """Parse the extracted text to extract medical test values like Glucose, BMI, etc."""
+    data = {
+        'Glucose': None,
+        'BMI': None,
+        'Insulin': None
+    }
+
+# parsing logic
+if 'Glucose' in text or 'eAG' in text:
+        data['Glucose'] = extract_value(text, 'Glucose', 'eAG')
+        
+    if 'BMI' in text:
+        data['BMI'] = extract_value(text, 'BMI')
+        
+    if 'Insulin' in text:
+        data['Insulin'] = extract_value(text, 'Insulin')
+        
+    return data
+
+# Function to extract a specific value from the extracted text
+def extract_value(text, *field_names):
+    """Extract the numerical value after a given field name (like Glucose or BMI)."""
+    lines = text.splitlines()
+    for line in lines:
+        for field_name in field_names:
+            if field_name in line:
+                parts = line.split()
+                for part in parts:
+                    if part.isdigit():
+                        return part
+                break
+    return None
+
+# Upload or Capture Image
+st.title("Diabetes Prediction Web App")
+
+# Upload or Capture Image
+image_option = st.radio("How would you like to provide your test report?", ('Upload Image', 'Capture via Camera'))
+
+# Placeholder for the glucose value (to allow auto-filling)
+glucose_value = ""
+
+# Handle image upload
+if image_option == 'Upload Image':
+    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
+        
+        # Extract text from the image (but don't display it)
+        extracted_text = process_image(image)
+        
+        # Parse the extracted text to auto-fill data
+        data = parse_text(extracted_text)
+        
+        # Set the auto-filled glucose value if extracted
+        if data['Glucose']:
+            glucose_value = data['Glucose']  # Auto-filled value
+            st.success(f"Auto-filled Glucose value: {glucose_value}")
+        else:
+            st.warning("Could not extract Glucose value from the report.")
+  
 # Create a centered container layout for the input form
 with st.container():
     st.markdown("<h4 style='text-align: center;'>Please enter the following details:</h4>", unsafe_allow_html=True)
