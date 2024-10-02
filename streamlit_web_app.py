@@ -50,15 +50,17 @@ def parse_text(text):
 
 # parsing logic
 if 'Glucose' in text or 'eAG' in text:
-        data['Glucose'] = extract_value(text, 'Glucose', 'eAG')
+  data['Glucose'] = extract_value(text, 'Glucose', 'eAG')
+    
         
-    if 'BMI' in text:
-        data['BMI'] = extract_value(text, 'BMI')
+if 'BMI' in text:
+  data['BMI'] = extract_value(text, 'BMI')
         
-    if 'Insulin' in text:
-        data['Insulin'] = extract_value(text, 'Insulin')
         
-    return data
+if 'Insulin' in text:
+  data['Insulin'] = extract_value(text, 'Insulin')
+        
+return data
 
 # Function to extract a specific value from the extracted text
 def extract_value(text, *field_names):
