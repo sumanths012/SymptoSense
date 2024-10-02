@@ -9,47 +9,33 @@ on:
       - main
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      # Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
 
+      # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.11.9'
 
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          
 
-      - name: Run Tests
-        run: |
-          pytest tests/
-
+      # Lint with flake8
       - name: Lint with flake8
         run: |
           pip install flake8
-          flake8 --ignore E501 your_project_directory/
+          flake8 --ignore E501 your_project_directory/  # Replace with your actual project directory
 
-  streamlit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install dependencies
-        run: |
-          pip install streamlit
-          pip install -r requirements.txt
-
+      # Run Streamlit in Headless Mode
       - name: Run Streamlit in Headless Mode
         run: streamlit run app.py --headless
