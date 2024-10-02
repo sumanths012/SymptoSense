@@ -38,4 +38,4 @@ jobs:
 
       # Run Streamlit in Headless Mode
       - name: Run Streamlit in Headless Mode
-        run: streamlit run app.py --headless
+        run: streamlit run streamlit_web_app.py --server.headless true 
