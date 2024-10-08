@@ -16,6 +16,7 @@ import numpy as np
 # Set up pytesseract path if needed (make sure this path is correct)
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
+
 # Set page configuration
 st.set_page_config(page_title="Diabetes Prediction Assistant",
                    layout="wide",
@@ -31,16 +32,16 @@ working_dir = os.path.dirname(os.path.abspath(__file__))
 # Load the saved diabetes model
 diabetes_model = pickle.load(open(r'C:/Users/suman/OneDrive/Desktop/Assignments/My Resume/Final_Project/ProjectFiles/SavedModels/diabetes_model.sav', 'rb'))
 
+
 # Function to process image and extract text
 def process_image(image):
     """Process the image to extract text using pytesseract."""
     # Convert the image to grayscale (for better OCR results)
     gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
-    
     # Apply OCR to extract text from the image
     extracted_text = pytesseract.image_to_string(gray_image)
-    
     return extracted_text
+
 
 # Function to parse extracted text and extract values
 def parse_text(text):
@@ -50,18 +51,15 @@ def parse_text(text):
         'BMI': None,
         'Insulin': None
     }
-    
     # Example parsing logic (you need to customize based on your report)
     if 'Glucose' in text or 'eAG' in text:
         data['Glucose'] = extract_value(text, 'Glucose', 'eAG')
-        
     if 'BMI' in text:
         data['BMI'] = extract_value(text, 'BMI')
-        
     if 'Insulin' in text:
         data['Insulin'] = extract_value(text, 'Insulin')
-        
     return data
+
 
 # Function to extract a specific value from the extracted text
 def extract_value(text, *field_names):
@@ -77,6 +75,7 @@ def extract_value(text, *field_names):
                 break
     return None
 
+
 # Upload or Capture Image
 st.title("Diabetes Prediction Web App")
 
@@ -91,13 +90,10 @@ if image_option == 'Upload Image':
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
-        
         # Extract text from the image (but don't display it)
         extracted_text = process_image(image)
-        
         # Parse the extracted text to auto-fill data
         data = parse_text(extracted_text)
-        
         # Set the auto-filled glucose value if extracted
         if data['Glucose']:
             glucose_value = data['Glucose']  # Auto-filled value
@@ -110,13 +106,10 @@ elif image_option == 'Capture via Camera':
     captured_image = st.camera_input("Take a picture of your test report")
     if captured_image is not None:
         image = Image.open(captured_image)
-        
         # Extract text from captured image (but don't display it)
         extracted_text = process_image(image)
-        
         # Parse the extracted text to auto-fill data
         data = parse_text(extracted_text)
-        
         # Set the auto-filled glucose value if extracted
         if data['Glucose']:
             glucose_value = data['Glucose']  # Auto-filled value
@@ -162,7 +155,6 @@ if st.button('Predict Diabetes Risk', key="diabetes_test"):
     # Convert inputs to float
     try:
         user_input = [float(x) for x in user_input]
-
         # Make prediction using the loaded model
         diab_prediction = diabetes_model.predict([user_input])
 
