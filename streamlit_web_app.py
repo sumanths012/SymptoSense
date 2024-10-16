@@ -68,6 +68,7 @@ def extract_value(text, *field_names):
                 break
     return None
 
+
 # Add JavaScript to handle auto-focus for camera
 st.markdown("""
     <script>
