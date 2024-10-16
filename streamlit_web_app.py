@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
-
 import os
 import pickle
 import streamlit as st
@@ -75,6 +68,16 @@ def extract_value(text, *field_names):
                 break
     return None
 
+# Add JavaScript to handle auto-focus for camera
+st.markdown("""
+    <script>
+        const videoElement = document.querySelector('video');
+        if (videoElement) {
+            videoElement.setAttribute('autofocus', true);
+            videoElement.setAttribute('autoFocus', true);
+        }
+    </script>
+""", unsafe_allow_html=True)
 
 # Upload or Capture Image
 st.title("Diabetes Prediction Web App")
