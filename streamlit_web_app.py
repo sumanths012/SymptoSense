@@ -1,4 +1,3 @@
-import os
 import pickle
 import streamlit as st
 import pytesseract
@@ -15,11 +14,13 @@ st.set_page_config(page_title="Diabetes Prediction Assistant", layout="wide", pa
 # Load the saved diabetes model
 diabetes_model = pickle.load(open(r'C:/Users/suman/OneDrive/Desktop/Assignments/My Resume/Final_Project/ProjectFiles/SavedModels/diabetes_model.sav', 'rb'))
 
+
 # Function to process image and extract text
 def process_image(image):
     gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
     extracted_text = pytesseract.image_to_string(gray_image)
     return extracted_text
+
 
 # Function to parse extracted text and extract values
 def parse_text(text, report_type):
@@ -29,6 +30,7 @@ def parse_text(text, report_type):
     elif report_type == 'insulin' and ('Insulin' in text or 'C-PEPTIDE FASTING, SERUM' in text):
         data['Insulin'] = extract_value(text, 'Insulin', 'C-PEPTIDE FASTING, SERUM')
     return data
+
 
 # Function to extract a specific value from the extracted text
 def extract_value(text, *field_names):
@@ -43,9 +45,11 @@ def extract_value(text, *field_names):
                 break
     return None
 
+
 # Header section
 st.markdown("<h1 style='text-align: center; color: #4CAF50;'>Diabetes Prediction System</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #555;'>Predict whether you are at risk of diabetes</h3>", unsafe_allow_html=True)
+
 
 # Glucose Report Section
 with st.expander("Upload or Capture Glucose Report"):
@@ -74,6 +78,7 @@ with st.expander("Upload or Capture Glucose Report"):
             else:
                 st.warning("Could not extract Glucose value.")
 
+
 # Insulin Report Section
 with st.expander("Upload or Capture Insulin Report"):
     insulin_image_option = st.radio("How would you like to provide your Insulin Report?", ('Upload Image', 'Capture via Camera'), key="insulin_radio")
@@ -101,6 +106,7 @@ with st.expander("Upload or Capture Insulin Report"):
             else:
                 st.warning("Could not extract Insulin value.")
 
+
 # Group inputs in columns to save space
 st.markdown("<hr>", unsafe_allow_html=True)
 st.markdown("<h4 style='text-align: center;'>Please enter the following details:</h4>", unsafe_allow_html=True)
@@ -118,6 +124,7 @@ with col2:
 with col3:
     BloodPressure = st.text_input('Blood Pressure value')
     BMI = st.text_input('BMI value')
+
 
 # Prediction Button and Result
 if st.button('Predict Diabetes Risk', key="diabetes_test"):
