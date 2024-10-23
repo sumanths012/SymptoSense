@@ -54,7 +54,7 @@ st.markdown("<h3 style='text-align: center; color: #555;'>Predict whether you ar
 # Glucose Report Section
 with st.expander("Upload or Capture Glucose Report"):
     glucose_image_option = st.radio("How would you like to provide your Glucose Report?", ('Upload Image', 'Capture via Camera'), key="glucose_radio")
-    glucose_value = ""  
+    glucose_value = ""
     if glucose_image_option == 'Upload Image':
         uploaded_glucose_file = st.file_uploader("Choose an image for the Glucose report...", type=["jpg", "jpeg", "png"], key="glucose")
         if uploaded_glucose_file:
@@ -82,7 +82,7 @@ with st.expander("Upload or Capture Glucose Report"):
 # Insulin Report Section
 with st.expander("Upload or Capture Insulin Report"):
     insulin_image_option = st.radio("How would you like to provide your Insulin Report?", ('Upload Image', 'Capture via Camera'), key="insulin_radio")
-    insulin_value = ""  
+    insulin_value = ""
     if insulin_image_option == 'Upload Image':
         uploaded_insulin_file = st.file_uploader("Choose an image for the Insulin report...", type=["jpg", "jpeg", "png"], key="insulin")
         if uploaded_insulin_file:
