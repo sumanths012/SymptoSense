@@ -8,8 +8,31 @@ import numpy as np
 # Set up pytesseract path if needed
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
+# Initialize session state for toggle
+if 'show_symptoms' not in st.session_state:
+    st.session_state.show_symptoms = False
+
 # Set page configuration
 st.set_page_config(page_title="Diabetes Prediction Assistant", layout="wide", page_icon="🧑‍⚕️")
+
+# CSS Styling
+st.markdown("""
+    <style>
+    .button-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .symptoms-container {
+        margin-top: 10px; /* Space between button and symptoms */
+        background-color: white;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Load the saved diabetes model
 diabetes_model = pickle.load(open(r'C:/Users/suman/OneDrive/Desktop/Assignments/My Resume/Final_Project/ProjectFiles/SavedModels/diabetes_model.sav', 'rb'))
@@ -126,15 +149,41 @@ with col3:
     BMI = st.text_input('BMI value')
 
 
-# Prediction Button and Result
-if st.button('Predict Diabetes Risk', key="diabetes_test"):
-    user_input = [Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age]
-    try:
-        user_input = [float(x) for x in user_input]
-        diab_prediction = diabetes_model.predict([user_input])
-        if diab_prediction[0] == 1:
-            st.success('The person is diabetic')
-        else:
-            st.success('The person is not diabetic')
-    except ValueError:
-        st.error("Please ensure all fields are filled in correctly with numerical values.")
+# Group the Predict and Show Symptoms buttons in a single container
+col1, col2, col3 = st.columns([3, 1, 1])
+with col1:
+    if st.button('Predict Diabetes Risk', key="diabetes_test"):
+        user_input = [Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age]
+        try:
+            user_input = [float(x) for x in user_input]
+            diab_prediction = diabetes_model.predict([user_input])
+            if diab_prediction[0] == 1:
+                st.success('The person is diabetic')
+            else:
+                st.success('The person is not diabetic')
+        except ValueError:
+            st.error("Please ensure all fields are filled in correctly with numerical values.")
+
+with col3:
+    # Toggle button to show/hide symptoms at the right corner
+    if st.button("Show Symptoms of Diabetes"):
+        st.session_state.show_symptoms = not st.session_state.show_symptoms
+
+# Display symptoms if the toggle is active
+if st.session_state.show_symptoms:
+    # Use the same column to display the symptoms below the button
+    with col3:
+        st.markdown('<div class="symptoms-container">', unsafe_allow_html=True)
+        st.markdown("""
+        ### Symptoms of Diabetes
+        - Increased thirst
+        - Frequent urination
+        - Extreme hunger
+        - Unexplained weight loss
+        - Fatigue
+        - Irritability
+        - Blurred vision
+        - Slow-healing sores
+        - Frequent infections, such as gums or skin infections and vaginal infections
+        """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
