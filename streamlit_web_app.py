@@ -5,15 +5,19 @@ from PIL import Image
 import cv2
 import numpy as np
 
+
 # Set up pytesseract path if needed
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
 
 # Initialize session state for toggle
 if 'show_symptoms' not in st.session_state:
     st.session_state.show_symptoms = False
 
+
 # Set page configuration
 st.set_page_config(page_title="Diabetes Prediction Assistant", layout="wide", page_icon="🧑‍⚕️")
+
 
 # CSS Styling
 st.markdown("""
@@ -24,7 +28,7 @@ st.markdown("""
         align-items: center;
     }
     .symptoms-container {
-        margin-top: 10px; /* Space between button and symptoms */
+        margin-top: 10px;
         background-color: white;
         padding: 10px;
         border: 1px solid #ccc;
@@ -33,6 +37,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 # Load the saved diabetes model
 diabetes_model = pickle.load(open(r'C:/Users/suman/OneDrive/Desktop/Assignments/My Resume/Final_Project/ProjectFiles/SavedModels/diabetes_model.sav', 'rb'))
@@ -69,15 +74,41 @@ def extract_value(text, *field_names):
     return None
 
 
+# Add JavaScript to handle auto-focus for camera
+st.markdown("""
+    <script>
+        const videoElement = document.querySelector('video');
+        if (videoElement) {
+            videoElement.setAttribute('autofocus', true);
+            videoElement.setAttribute('autoFocus', true);
+        }
+    </script>
+""", unsafe_allow_html=True)
+
+
+# Function to process frame for real-time border detection
+def process_frame(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if contours:
+        largest_contour = max(contours, key=cv2.contourArea)
+        approx = cv2.approxPolyDP(largest_contour, 0.01 * cv2.arcLength(largest_contour, True), True)
+        cv2.drawContours(frame, [approx], -1, (0, 255, 0), 2)  # Draw green border
+    return frame
+
+
 # Header section
 st.markdown("<h1 style='text-align: center; color: #4CAF50;'>Diabetes Prediction System</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #555;'>Predict whether you are at risk of diabetes</h3>", unsafe_allow_html=True)
 
 
 # Glucose Report Section
-with st.expander("Upload or Capture Glucose Report"):
-    glucose_image_option = st.radio("How would you like to provide your Glucose Report?", ('Upload Image', 'Capture via Camera'), key="glucose_radio")
+with st.expander("Upload, Capture, or Take Real-Time Glucose Report"):
+    glucose_image_option = st.radio("How would you like to provide your Glucose Report?", ('Upload Image', 'Capture via Camera', 'Real-time Capture with Border Detection'), key="glucose_radio")
     glucose_value = ""
+    
     if glucose_image_option == 'Upload Image':
         uploaded_glucose_file = st.file_uploader("Choose an image for the Glucose report...", type=["jpg", "jpeg", "png"], key="glucose")
         if uploaded_glucose_file:
@@ -89,6 +120,7 @@ with st.expander("Upload or Capture Glucose Report"):
                 st.success(f"Auto-filled Glucose value: {glucose_value}")
             else:
                 st.warning("Could not extract Glucose value.")
+    
     elif glucose_image_option == 'Capture via Camera':
         captured_glucose_image = st.camera_input("Take a picture of your Glucose report", key="glucose_cam")
         if captured_glucose_image:
@@ -100,12 +132,45 @@ with st.expander("Upload or Capture Glucose Report"):
                 st.success(f"Auto-filled Glucose value: {glucose_value}")
             else:
                 st.warning("Could not extract Glucose value.")
+    
+    elif glucose_image_option == 'Real-time Capture with Border Detection':
+        st.write("Align the Glucose report, and borders will be detected in real-time. When ready, capture the image.")
+        cap = cv2.VideoCapture(0)
+        video_placeholder = st.empty()
+        capture_button = st.button("Capture Glucose Report")
+
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                st.error("Error accessing the camera.")
+                break
+
+            processed_frame = process_frame(frame)
+            video_placeholder.image(processed_frame, channels="BGR")
+
+            if capture_button:
+                captured_glucose_frame = frame
+                break
+
+        cap.release()
+        if 'captured_glucose_frame' in locals():
+            st.success("Glucose report captured!")
+            glucose_image = Image.fromarray(cv2.cvtColor(captured_glucose_frame, cv2.COLOR_BGR2RGB))
+            st.image(glucose_image, caption="Captured Glucose Report", use_column_width=True)
+            extracted_glucose_text = process_image(glucose_image)
+            glucose_data = parse_text(extracted_glucose_text, 'glucose')
+            if glucose_data['Glucose']:
+                glucose_value = glucose_data['Glucose']
+                st.success(f"Auto-filled Glucose value: {glucose_value}")
+            else:
+                st.warning("Could not extract Glucose value.")
 
 
 # Insulin Report Section
-with st.expander("Upload or Capture Insulin Report"):
-    insulin_image_option = st.radio("How would you like to provide your Insulin Report?", ('Upload Image', 'Capture via Camera'), key="insulin_radio")
+with st.expander("Upload, Capture, or Take Real-Time Insulin Report"):
+    insulin_image_option = st.radio("How would you like to provide your Insulin Report?", ('Upload Image', 'Capture via Camera', 'Real-time Capture with Border Detection'), key="insulin_radio")
     insulin_value = ""
+    
     if insulin_image_option == 'Upload Image':
         uploaded_insulin_file = st.file_uploader("Choose an image for the Insulin report...", type=["jpg", "jpeg", "png"], key="insulin")
         if uploaded_insulin_file:
@@ -117,6 +182,7 @@ with st.expander("Upload or Capture Insulin Report"):
                 st.success(f"Auto-filled Insulin value: {insulin_value}")
             else:
                 st.warning("Could not extract Insulin value.")
+    
     elif insulin_image_option == 'Capture via Camera':
         captured_insulin_image = st.camera_input("Take a picture of your Insulin report", key="insulin_cam")
         if captured_insulin_image:
@@ -128,62 +194,35 @@ with st.expander("Upload or Capture Insulin Report"):
                 st.success(f"Auto-filled Insulin value: {insulin_value}")
             else:
                 st.warning("Could not extract Insulin value.")
+    
+    elif insulin_image_option == 'Real-time Capture with Border Detection':
+        st.write("Align the Insulin report, and borders will be detected in real-time. When ready, capture the image.")
+        cap = cv2.VideoCapture(0)
+        video_placeholder = st.empty()
+        capture_button = st.button("Capture Insulin Report")
 
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                st.error("Error accessing the camera.")
+                break
 
-# Group inputs in columns to save space
-st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center;'>Please enter the following details:</h4>", unsafe_allow_html=True)
+            processed_frame = process_frame(frame)
+            video_placeholder.image(processed_frame, channels="BGR")
 
-# Split into columns
-col1, col2, col3 = st.columns(3)
-with col1:
-    Pregnancies = st.text_input('Number of Pregnancies')
-    SkinThickness = st.text_input('Skin Thickness value')
-    DiabetesPedigreeFunction = st.text_input('Diabetes Pedigree Function value')
-with col2:
-    Glucose = st.text_input('Glucose Level', value=glucose_value)
-    Insulin = st.text_input('Insulin Level', value=insulin_value)
-    Age = st.text_input('Age of the Person')
-with col3:
-    BloodPressure = st.text_input('Blood Pressure value')
-    BMI = st.text_input('BMI value')
+            if capture_button:
+                captured_insulin_frame = frame
+                break
 
-
-# Group the Predict and Show Symptoms buttons in a single container
-col1, col2, col3 = st.columns([3, 1, 1])
-with col1:
-    if st.button('Predict Diabetes Risk', key="diabetes_test"):
-        user_input = [Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age]
-        try:
-            user_input = [float(x) for x in user_input]
-            diab_prediction = diabetes_model.predict([user_input])
-            if diab_prediction[0] == 1:
-                st.success('The person is diabetic')
+        cap.release()
+        if 'captured_insulin_frame' in locals():
+            st.success("Insulin report captured!")
+            insulin_image = Image.fromarray(cv2.cvtColor(captured_insulin_frame, cv2.COLOR_BGR2RGB))
+            st.image(insulin_image, caption="Captured Insulin Report", use_column_width=True)
+            extracted_insulin_text = process_image(insulin_image)
+            insulin_data = parse_text(extracted_insulin_text, 'insulin')
+            if insulin_data['Insulin']:
+                insulin_value = insulin_data['Insulin']
+                st.success(f"Auto-filled Insulin value: {insulin_value}")
             else:
-                st.success('The person is not diabetic')
-        except ValueError:
-            st.error("Please ensure all fields are filled in correctly with numerical values.")
-
-with col3:
-    # Toggle button to show/hide symptoms at the right corner
-    if st.button("Show Symptoms of Diabetes"):
-        st.session_state.show_symptoms = not st.session_state.show_symptoms
-
-# Display symptoms if the toggle is active
-if st.session_state.show_symptoms:
-    # Use the same column to display the symptoms below the button
-    with col3:
-        st.markdown('<div class="symptoms-container">', unsafe_allow_html=True)
-        st.markdown("""
-        ### Symptoms of Diabetes
-        - Increased thirst
-        - Frequent urination
-        - Extreme hunger
-        - Unexplained weight loss
-        - Fatigue
-        - Irritability
-        - Blurred vision
-        - Slow-healing sores
-        - Frequent infections, such as gums or skin infections and vaginal infections
-        """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+                st.warning("Could not extract Insulin value.")
