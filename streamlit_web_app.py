@@ -37,13 +37,11 @@ st.markdown("""
 # Load the saved diabetes model
 diabetes_model = pickle.load(open(r'C:/Users/suman/OneDrive/Desktop/Assignments/My Resume/Final_Project/ProjectFiles/SavedModels/diabetes_model.sav', 'rb'))
 
-
 # Function to process image and extract text
 def process_image(image):
     gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
     extracted_text = pytesseract.image_to_string(gray_image)
     return extracted_text
-
 
 # Function to parse extracted text and extract values
 def parse_text(text, report_type):
@@ -53,7 +51,6 @@ def parse_text(text, report_type):
     elif report_type == 'insulin' and ('Insulin' in text or 'C-PEPTIDE FASTING, SERUM' in text):
         data['Insulin'] = extract_value(text, 'Insulin', 'C-PEPTIDE FASTING, SERUM')
     return data
-
 
 # Function to extract a specific value from the extracted text
 def extract_value(text, *field_names):
@@ -68,6 +65,29 @@ def extract_value(text, *field_names):
                 break
     return None
 
+# Add JavaScript to handle auto-focus for camera
+st.markdown("""
+    <script>
+        const videoElement = document.querySelector('video');
+        if (videoElement) {
+            videoElement.setAttribute('autofocus', true);
+            videoElement.setAttribute('autoFocus', true);
+        }
+    </script>
+""", unsafe_allow_html=True)
+
+# Function to process frame for real-time border detection
+def process_frame(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if contours:
+        largest_contour = max(contours, key=cv2.contourArea)
+        approx = cv2.approxPolyDP(largest_contour, 0.01 * cv2.arcLength(largest_contour, True), True)
+        cv2.drawContours(frame, [approx], -1, (0, 255, 0), 2)  # Draw green border
+    return frame
+
 
 # Header section
 st.markdown("<h1 style='text-align: center; color: #4CAF50;'>Diabetes Prediction System</h1>", unsafe_allow_html=True)
@@ -75,9 +95,9 @@ st.markdown("<h3 style='text-align: center; color: #555;'>Predict whether you ar
 
 
 # Glucose Report Section
-with st.expander("Upload or Capture Glucose Report"):
-    glucose_image_option = st.radio("How would you like to provide your Glucose Report?", ('Upload Image', 'Capture via Camera'), key="glucose_radio")
-    glucose_value = ""
+with st.expander("Upload, Capture, or Take Real-Time Glucose Report"):
+    glucose_image_option = st.radio("How would you like to provide your Glucose Report?", ('Upload Image', 'Capture via Camera', 'Real-time Capture with Border Detection'), key="glucose_radio")
+    glucose_value = ""  
     if glucose_image_option == 'Upload Image':
         uploaded_glucose_file = st.file_uploader("Choose an image for the Glucose report...", type=["jpg", "jpeg", "png"], key="glucose")
         if uploaded_glucose_file:
@@ -100,12 +120,42 @@ with st.expander("Upload or Capture Glucose Report"):
                 st.success(f"Auto-filled Glucose value: {glucose_value}")
             else:
                 st.warning("Could not extract Glucose value.")
+    elif glucose_image_option == 'Real-time Capture with Border Detection':
+        st.write("Align the Glucose report, and borders will be detected in real-time. When ready, capture the image.")
+        cap = cv2.VideoCapture(0)
+        video_placeholder = st.empty()
+        capture_button = st.button("Capture Glucose Report")
 
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                st.error("Error accessing the camera.")
+                break
+
+            processed_frame = process_frame(frame)
+            video_placeholder.image(processed_frame, channels="BGR")
+
+            if capture_button:
+                captured_glucose_frame = frame
+                break
+
+        cap.release()
+        if 'captured_glucose_frame' in locals():
+            st.success("Glucose report captured!")
+            glucose_image = Image.fromarray(cv2.cvtColor(captured_glucose_frame, cv2.COLOR_BGR2RGB))
+            st.image(glucose_image, caption="Captured Glucose Report", use_column_width=True)
+            extracted_glucose_text = process_image(glucose_image)
+            glucose_data = parse_text(extracted_glucose_text, 'glucose')
+            if glucose_data['Glucose']:
+                glucose_value = glucose_data['Glucose']
+                st.success(f"Auto-filled Glucose value: {glucose_value}")
+            else:
+                st.warning("Could not extract Glucose value.")
 
 # Insulin Report Section
-with st.expander("Upload or Capture Insulin Report"):
-    insulin_image_option = st.radio("How would you like to provide your Insulin Report?", ('Upload Image', 'Capture via Camera'), key="insulin_radio")
-    insulin_value = ""
+with st.expander("Upload, Capture, or Take Real-Time Insulin Report"):
+    insulin_image_option = st.radio("How would you like to provide your Insulin Report?", ('Upload Image', 'Capture via Camera', 'Real-time Capture with Border Detection'), key="insulin_radio")
+    insulin_value = ""  
     if insulin_image_option == 'Upload Image':
         uploaded_insulin_file = st.file_uploader("Choose an image for the Insulin report...", type=["jpg", "jpeg", "png"], key="insulin")
         if uploaded_insulin_file:
@@ -128,11 +178,40 @@ with st.expander("Upload or Capture Insulin Report"):
                 st.success(f"Auto-filled Insulin value: {insulin_value}")
             else:
                 st.warning("Could not extract Insulin value.")
+    elif insulin_image_option == 'Real-time Capture with Border Detection':
+        st.write("Align the Insulin report, and borders will be detected in real-time. When ready, capture the image.")
+        cap = cv2.VideoCapture(0)
+        video_placeholder = st.empty()
+        capture_button = st.button("Capture Insulin Report")
 
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                st.error("Error accessing the camera.")
+                break
+
+            processed_frame = process_frame(frame)
+            video_placeholder.image(processed_frame, channels="BGR")
+
+            if capture_button:
+                captured_insulin_frame = frame
+                break
+
+        cap.release()
+        if 'captured_insulin_frame' in locals():
+            st.success("Insulin report captured!")
+            insulin_image = Image.fromarray(cv2.cvtColor(captured_insulin_frame, cv2.COLOR_BGR2RGB))
+            st.image(insulin_image, caption="Captured Insulin Report", use_column_width=True)
+            extracted_insulin_text = process_image(insulin_image)
+            insulin_data = parse_text(extracted_insulin_text, 'insulin')
+            if insulin_data['Insulin']:
+                insulin_value = insulin_data['Insulin']
+                st.success(f"Auto-filled Insulin value: {insulin_value}")
+            else:
+                st.warning("Could not extract Insulin value.")
 
 # Group inputs in columns to save space
 st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center;'>Please enter the following details:</h4>", unsafe_allow_html=True)
 
 # Split into columns
 col1, col2, col3 = st.columns(3)
@@ -147,6 +226,7 @@ with col2:
 with col3:
     BloodPressure = st.text_input('Blood Pressure value')
     BMI = st.text_input('BMI value')
+
 
 
 # Group the Predict and Show Symptoms buttons in a single container
