@@ -91,6 +91,7 @@ with st.expander("Upload or Capture Glucose Report"):
                 st.warning("Could not extract Glucose value.")
     elif glucose_image_option == 'Capture via Camera':
         captured_glucose_image = st.camera_input("Take a picture of your Glucose report", key="glucose_cam")
+
         if captured_glucose_image:
             glucose_image = Image.open(captured_glucose_image)
             extracted_glucose_text = process_image(glucose_image)
