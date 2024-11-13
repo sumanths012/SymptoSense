@@ -51,6 +51,25 @@ def process_image(image):
     return extracted_text
 
 
+# Add JavaScript to handle auto-focus for camera
+st.markdown("""
+<script>
+  const videoElement = document.querySelector('video');
+  if (videoElement) {
+    videoElement.setAttribute('autofocus', true);
+    videoElement.setAttribute('autoFocus', true);
+    videoElement.classList.add('autofocus-border');
+  }
+</script>
+
+<style>
+  .autofocus-border {
+    border: 2px solid blue; /* Adjust border style as needed */
+  }
+</style>
+""", unsafe_allow_html=True)
+
+
 # Function to parse extracted text and extract values
 def parse_text(text, report_type):
     data = {'Glucose': None, 'Insulin': None}
