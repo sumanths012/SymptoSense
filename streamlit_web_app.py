@@ -153,17 +153,17 @@ with st.expander("Upload or Capture Blood Pressure Report"):
                 bp_value = bp_data['Blood Pressure']
                 st.success(f"Auto-filled Blood Pressure value: {bp_value}")
             else:
-                bp_value = "144"
+                st.warning("Could not extract Blood Pressure value.")
             if bp_data['Height']:
                 height_value = bp_data['Height']
                 st.success(f"Auto-filled Height: {height_value} cm")
             else:
-                height_value = "177"
+                st.warning("Could not extract Height value.")
             if bp_data['Weight']:
                 weight_value = bp_data['Weight']
                 st.success(f"Auto-filled Weight: {weight_value} kg")
             else:
-                weight_value = "78"
+                st.warning("Could not extract Weight value.")
     elif bp_image_option == 'Capture via Camera':
         
         captured_bp_image = st.camera_input("Take a picture of your Blood Pressure report", key="bp_cam")
@@ -175,17 +175,17 @@ with st.expander("Upload or Capture Blood Pressure Report"):
                 bp_value = bp_data['Blood Pressure']
                 st.success(f"Auto-filled Blood Pressure value: {bp_value}")
             else:
-                bp_value = "144"
+                 st.warning("Could not extract Blood Pressure value.")
             if bp_data['Height']:
                 height_value = bp_data['Height']
                 st.success(f"Auto-filled Height: {height_value} cm")
             else:
-                height_value = "177"
+                st.warning("Could not extract Height value.")
             if bp_data['Weight']:
                 weight_value = bp_data['Weight']
                 st.success(f"Auto-filled Weight: {weight_value} kg")
             else:
-                weight_value = "78"
+                 st.warning("Could not extract Weight value.")
 
 
 # Group inputs in columns to save space
