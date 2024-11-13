@@ -42,7 +42,7 @@ diabetes_model = pickle.load(open(r'C:/Users/suman/OneDrive/Desktop/Assignments/
 def calculate_bmi(height_cm, weight_kg):
     height_m = height_cm / 100  # Convert height to meters
     return round(weight_kg / (height_m ** 2), 2)
-    
+
 
 # Function to process image and extract text
 def process_image(image):
@@ -165,7 +165,6 @@ with st.expander("Upload or Capture Blood Pressure Report"):
             else:
                 st.warning("Could not extract Weight value.")
     elif bp_image_option == 'Capture via Camera':
-        
         captured_bp_image = st.camera_input("Take a picture of your Blood Pressure report", key="bp_cam")
         if captured_bp_image:
             bp_image = Image.open(captured_bp_image)
