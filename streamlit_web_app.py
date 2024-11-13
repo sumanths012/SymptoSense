@@ -38,6 +38,12 @@ st.markdown("""
 diabetes_model = pickle.load(open(r'C:/Users/suman/OneDrive/Desktop/Assignments/My Resume/Final_Project/ProjectFiles/SavedModels/diabetes_model.sav', 'rb'))
 
 
+# Function to calculate BMI
+def calculate_bmi(height_cm, weight_kg):
+    height_m = height_cm / 100  # Convert height to meters
+    return round(weight_kg / (height_m ** 2), 2)
+    
+
 # Function to process image and extract text
 def process_image(image):
     gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
@@ -146,8 +152,17 @@ with col2:
     Insulin = st.text_input('Insulin Level', value=insulin_value)
     Age = st.text_input('Age of the Person')
 with col3:
-    BloodPressure = st.text_input('Blood Pressure value')
-    BMI = st.text_input('BMI value')
+    Height = st.text_input('Height (in cm)', value=height_value)
+    Weight = st.text_input('Weight (in kg)', value=weight_value)
+    BMI = None
+    if Height and Weight:
+        try:
+            Height = float(Height)
+            Weight = float(Weight)
+            BMI = calculate_bmi(Height, Weight)
+            st.success(f"Calculated BMI: {BMI}")
+        except ValueError:
+            st.warning("Please enter valid numerical values for height and weight.")
 
 
 # Group the Predict and Show Symptoms buttons in a single container
