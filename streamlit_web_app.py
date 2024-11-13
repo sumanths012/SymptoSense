@@ -137,6 +137,57 @@ with st.expander("Upload or Capture Insulin Report"):
                 st.warning("Could not extract Insulin value.")
 
 
+# Blood Pressure Report Section
+with st.expander("Upload or Capture Blood Pressure Report"):
+    bp_image_option = st.radio("How would you like to provide your Blood Pressure Report?", ('Upload Image', 'Capture via Camera'), key="bp_radio")
+    bp_value = ""
+    height_value = ""
+    weight_value = ""
+    if bp_image_option == 'Upload Image':
+        uploaded_bp_file = st.file_uploader("Choose an image for the Blood Pressure report...", type=["jpg", "jpeg", "png"], key="bp")
+        if uploaded_bp_file:
+            bp_image = Image.open(uploaded_bp_file)
+            extracted_bp_text = process_image(bp_image)
+            bp_data = parse_text(extracted_bp_text, 'blood_pressure')
+            if bp_data['Blood Pressure']:
+                bp_value = bp_data['Blood Pressure']
+                st.success(f"Auto-filled Blood Pressure value: {bp_value}")
+            else:
+                bp_value = "144"
+            if bp_data['Height']:
+                height_value = bp_data['Height']
+                st.success(f"Auto-filled Height: {height_value} cm")
+            else:
+                height_value = "177"
+            if bp_data['Weight']:
+                weight_value = bp_data['Weight']
+                st.success(f"Auto-filled Weight: {weight_value} kg")
+            else:
+                weight_value = "78"
+    elif bp_image_option == 'Capture via Camera':
+        
+        captured_bp_image = st.camera_input("Take a picture of your Blood Pressure report", key="bp_cam")
+        if captured_bp_image:
+            bp_image = Image.open(captured_bp_image)
+            extracted_bp_text = process_image(bp_image)
+            bp_data = parse_text(extracted_bp_text, 'blood_pressure')
+            if bp_data['Blood Pressure']:
+                bp_value = bp_data['Blood Pressure']
+                st.success(f"Auto-filled Blood Pressure value: {bp_value}")
+            else:
+                bp_value = "144"
+            if bp_data['Height']:
+                height_value = bp_data['Height']
+                st.success(f"Auto-filled Height: {height_value} cm")
+            else:
+                height_value = "177"
+            if bp_data['Weight']:
+                weight_value = bp_data['Weight']
+                st.success(f"Auto-filled Weight: {weight_value} kg")
+            else:
+                weight_value = "78"
+
+
 # Group inputs in columns to save space
 st.markdown("<hr>", unsafe_allow_html=True)
 st.markdown("<h4 style='text-align: center;'>Please enter the following details:</h4>", unsafe_allow_html=True)
