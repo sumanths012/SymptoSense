@@ -174,7 +174,7 @@ with st.expander("Upload or Capture Blood Pressure Report"):
                 bp_value = bp_data['Blood Pressure']
                 st.success(f"Auto-filled Blood Pressure value: {bp_value}")
             else:
-                 st.warning("Could not extract Blood Pressure value.")
+                st.warning("Could not extract Blood Pressure value.")
             if bp_data['Height']:
                 height_value = bp_data['Height']
                 st.success(f"Auto-filled Height: {height_value} cm")
@@ -184,7 +184,7 @@ with st.expander("Upload or Capture Blood Pressure Report"):
                 weight_value = bp_data['Weight']
                 st.success(f"Auto-filled Weight: {weight_value} kg")
             else:
-                 st.warning("Could not extract Weight value.")
+                st.warning("Could not extract Weight value.")
 
 
 # Group inputs in columns to save space
