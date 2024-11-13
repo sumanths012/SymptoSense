@@ -21,9 +21,9 @@ def calculate_bmi(height_cm, weight_kg):
     return round(weight_kg / (height_m ** 2), 2)
 
 
-#Function to calculate dpf
+# Function to calculate dpf
 def calculate_dpf(no_of_relatives):
-    return round(0.176*no_of_relatives, 3)
+    return round(0.176 * no_of_relatives, 3)
 
 
 # Function to process the image and extract text
@@ -87,7 +87,7 @@ st.markdown("<h3 style='text-align: center; color: #555;'>Predict whether you ar
 # Glucose Report Section
 with st.expander("Upload or Capture Glucose Report"):
     glucose_image_option = st.radio("How would you like to provide your Glucose Report?", ('Upload Image', 'Capture via Camera'), key="glucose_radio")
-    glucose_value = ""  
+    glucose_value = " "
     if glucose_image_option == 'Upload Image':
         uploaded_glucose_file = st.file_uploader("Choose an image for the Glucose report...", type=["jpg", "jpeg", "png"], key="glucose")
         if uploaded_glucose_file:
@@ -115,7 +115,7 @@ with st.expander("Upload or Capture Glucose Report"):
 # Insulin Report Section
 with st.expander("Upload or Capture Insulin Report"):
     insulin_image_option = st.radio("How would you like to provide your Insulin Report?", ('Upload Image', 'Capture via Camera'), key="insulin_radio")
-    insulin_value = ""  
+    insulin_value = " "
     if insulin_image_option == 'Upload Image':
         uploaded_insulin_file = st.file_uploader("Choose an image for the Insulin report...", type=["jpg", "jpeg", "png"], key="insulin")
         if uploaded_insulin_file:
@@ -188,7 +188,7 @@ with st.expander("Upload or Capture Blood Pressure Report"):
                 st.success(f"Auto-filled Weight: {weight_value} kg")
             else:
                 st.warning("Could not extract Weight value.")
-                
+
 
 # Group inputs in columns to save space
 st.markdown("<hr>", unsafe_allow_html=True)
@@ -224,8 +224,8 @@ with col3:
             st.success(f"Calculated DPF: {DPF}")
         except ValueError:
             st.warning("Please enter valid numerical values for no. of relatives.")
-            
-            
+
+
 # Prediction Button and Result
 if st.button('Predict Diabetes Risk', key="diabetes_test"):
     user_input = [Pregnancies, Glucose, BloodPressure, RelativesWithDiabetes, Insulin, BMI, Age]
